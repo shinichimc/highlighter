@@ -4,7 +4,7 @@ $(document).ready(function(){
     var mytext = selectHTML();
 
     if (mytext.length > 0) {
-      highlightTargetedText(mytext);
+      var t = highlightTargetedText(mytext);
     }
   });
 });
@@ -22,9 +22,9 @@ function getSelectedText() {
 function highlightTargetedText(targetText) {
   var targetedText = targetText;
   $('p:contains(' + targetedText + ')').each(function(){
-    var txt = $(this).text();
+    var scope = $(this).text();
     $(this).html(
-      txt.replace(targetedText,'<span class="marker">' + targetedText + '</span>')
+      scope.replace(targetedText,'<span class="marker">' + targetedText + '</span>')
     );
   });
 }

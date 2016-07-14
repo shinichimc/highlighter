@@ -30,3 +30,7 @@ width:800px;
   line-height:100px;
   width : 100%;
 }
+
+p {
+  margin-bottom: 30px;
+}
