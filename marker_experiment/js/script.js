@@ -1,11 +1,16 @@
-$(document).ready(function(){
-  $('body').mouseup(function(){
-    // var text = getSelectedText();
-    var mytext = selectHTML();
+var pickerHTML = '<div class="color-picker-wrp"><table><tbody><tr><td id="pick-red"></td><td id="pick-blue"></td></tr><tr><td id="pick-yellow"></td><td id="pick-green"></td></tr></tbody></table></div>';
 
-    if (mytext.length > 0) {
-      var t = highlightTargetedText(mytext);
+$(document).ready(function(){
+  $('body').append(pickerHTML);
+  $('body').mouseup(function(){
+    toggleColorPicker();
+    var text = getSelectedText();
+    // var mytext = selectHTML();
+
+    if (text.length > 0 && confirm("do you want to mark the text?")) {
+      var t = highlightTargetedText(text);
     }
+
   });
 });
 
@@ -22,10 +27,8 @@ function getSelectedText() {
 function highlightTargetedText(targetText) {
   var targetedText = targetText;
   $('p:contains(' + targetedText + ')').each(function(){
-    var scope = $(this).text();
-    $(this).html(
-      scope.replace(targetedText,'<span class="marker">' + targetedText + '</span>')
-    );
+    var scope = $(this).html();
+    $(this).html(scope.replace(targetedText,'<span class="marker">' + targetedText + '</span>'));
   });
 }
 
@@ -47,4 +50,8 @@ function selectHTML() {
             return getSelection();
         }
     }
+}
+
+function toggleColorPicker() {
+  $('.color-picker-wrp').toggle();
 }
