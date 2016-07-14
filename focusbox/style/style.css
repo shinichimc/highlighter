@@ -1,0 +1,29 @@
+@charset "UTF-8";
+
+p {
+  margin: 0;
+}
+
+.kfe {
+  background-color: #F2F2F2;
+  border: #c3c3c3 solid 1px;
+  height: 27px;
+  line-height: 27px;
+  padding-left: 5px;
+  position: relative;
+  width: 150px;
+}
+
+.kef-cursor {
+  position: relative;
+}
+
+.kef-blue {
+  border: #63a8fc solid 2px;
+  display: block;
+  height: 30px;
+  position: absolute;
+  top: -8px;
+  left : -5px;
+  width: 11px;
+}

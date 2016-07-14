@@ -1,0 +1,32 @@
+@charset "UTF-8";
+
+div#wrapper{
+/*background-color:#F5EFE9;*/
+background-color:#fff;
+height:800px;
+margin:0 auto;
+width:800px;
+}
+
+.menu-area-top {
+  background-color: #F5F5F5;
+  border: #e4e1e1 solid 1px;
+  height: 100px;
+  text-align: center;
+  line-height:100px;
+  width : 100%;
+}
+
+.marker {
+  background-color:#FFE566;
+	background: linear-gradient(transparent 0%, #00FFFF 60%);
+}
+
+.menu-area-bottom {
+  background-color: #f5f5f5;
+  border: #e4e1e1 solid 1px;
+  height: 100px;
+  text-align: center;
+  line-height:100px;
+  width : 100%;
+}

@@ -1,0 +1,51 @@
+form.CGMForm{
+background-color:#f4f4d5;
+color:#3c3c3c;
+height:auto;
+margin:0 auto 17px;
+padding:20px 15px 10px 15px;
+width:600px;
+}
+
+form.CGMForm p{
+margin:0;
+}
+
+form.CGMForm .annotation{
+font-size:12px;
+padding-left:8px;
+}
+
+form.CGMForm p.heading{
+font-size:16px;
+font-weight:600;
+}
+
+form.CGMForm textarea.textCGM{
+border:solid 1px #E2E292;
+font-size:17px;
+height:45px;
+margin-top:20px;
+width:100%;
+}
+
+form.CGMForm p.submitCGM{
+margin:15px 0 15px;
+text-align:center;
+}
+
+form.CGMForm p.submitCGM input{
+color:#fff;
+background-color:#22b14d;
+border:solid 1px #22b14d;
+border-radius:6px;
+font-size:16px;
+font-weight:600;
+height:43px;
+width:235px;
+}
+
+form.CGMForm p.bottomAnnotation{
+font-size:12px;
+line-height:18px;
+}
