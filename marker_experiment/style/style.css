@@ -23,6 +23,26 @@ width:800px;
 	background: linear-gradient(transparent 0%, #00FFFF 60%);
 }
 
+.red {
+  background-color: #ec96cb;
+  background: linear-gradient(transparent 0%, #ec96cb 60%);
+}
+
+.blue {
+  background-color: #579ff5;
+  background: linear-gradient(transparent 0%, #579ff5 60%);
+}
+
+.yellow {
+  background-color: #f1ca46;
+  background: linear-gradient(transparent 0%, #f1ca46 60%);
+}
+
+.green {
+  background-color: #2cd29a;
+  background: linear-gradient(transparent 0%, #2cd29a 60%);
+}
+
 .color-picker-wrp {
   background-color:#f8f9ff;
   border: #ccd0ec solid 1px;
@@ -45,18 +65,18 @@ width:800px;
   width: 50%;
 }
 
-#pick-red {
+#pick-red, .red {
   background-color: #ec96cb;
 }
 
-#pick-blue {
+#pick-blue, .blue {
   background-color: #579ff5;
 }
 
-#pick-yellow {
+#pick-yellow, .yellow {
   background-color: #f1ca46;
 }
 
-#pick-green {
+#pick-green, .green {
   background-color: #2cd29a;
 }

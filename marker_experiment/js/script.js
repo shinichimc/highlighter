@@ -1,15 +1,29 @@
-var pickerHTML = '<div class="color-picker-wrp"><table><tbody><tr><td id="pick-red"></td><td id="pick-blue"></td></tr><tr><td id="pick-yellow"></td><td id="pick-green"></td></tr></tbody></table></div>';
+var highlightTxt = '';
 
-$(document).ready(function(){
-  $('body').append(pickerHTML);
-  $('body').mouseup(function(){
+$(document).ready(function() {
+
+  // mouseup時のアクション
+  $('body').mouseup(function() {
+
+    // カラーピッカーを表示/非表示させる。
     toggleColorPicker();
-    var text = getSelectedText();
-    // var mytext = selectHTML();
 
-    if (text.length > 0 && confirm("do you want to mark the text?")) {
-      var t = highlightTargetedText(text);
-    }
+    // ハイライトするテキストをセット
+    highlightTxt = getSelectedText();
+
+　　　
+  });
+
+  $('.pkiepick').click(function() {
+
+    // 付与するクラス名を取得する
+    var colorClassName = geColorClassName(this);
+    alert(highlightTxt);
+
+    // if (highlightText.length > 0)) {
+    //   // ターゲット文字列をハイライトする
+    //   highlightTargetedText(highlightText, colorClassName);
+    // }
 
   });
 });
@@ -24,32 +38,25 @@ function getSelectedText() {
   return text;
 }
 
-function highlightTargetedText(targetText) {
-  var targetedText = targetText;
-  $('p:contains(' + targetedText + ')').each(function(){
+function highlightTargetedText(targetText, colorClassName) {
+  $('p:contains(' + targetText + ')').each(function(){
     var scope = $(this).html();
-    $(this).html(scope.replace(targetedText,'<span class="marker">' + targetedText + '</span>'));
+    $(this).html(scope.replace(targetText,'<span class="' + colorClassName + '">' + targetText + '</span>'));
   });
 }
 
-function selectHTML() {
-    try {
-        if (window.ActiveXObject) {
-            var c = document.selection.createRange();
-            return c.htmlText;
-        }
+function geColorClassName(obj) {
 
-        var nNd = document.createElement("span");
-        var w = getSelection().getRangeAt(0);
-        w.surroundContents(nNd);
-        return nNd.innerHTML;
-    } catch (e) {
-        if (window.ActiveXObject) {
-            return document.selection.createRange();
-        } else {
-            return getSelection();
-        }
-    }
+  var id = $(obj).attr('id');
+  if (!id) {
+    return '';
+  }
+
+  if (id == 'pick-red') return 'red';
+  else if (id == 'pick-blue') return 'blue';
+  else if (id == 'pick-yellow') return 'yellow';
+  else if (id == 'pick-green') return 'green';
+  else return '';
 }
 
 function toggleColorPicker() {
