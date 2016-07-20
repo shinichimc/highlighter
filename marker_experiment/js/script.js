@@ -27,6 +27,8 @@ $(document).ready(function() {
   .on('mouseenter', '.marker', function(e) {
       toggleColorPicker(e);
       $('#pick-del').show();
+
+      highlightTxt = $(this).prop('outerHTML');
       // $(this).contents().unwrap();
 
   })
@@ -36,7 +38,8 @@ $(document).ready(function() {
 });
 
 function highlightTargetedText(colorClassName) {
-  $('p:contains(' + highlightTxt + ')').each(function(){
+
+  $('p').each(function(){
     var scope = $(this).html();
     $(this).html(scope.replace(highlightTxt,'<span class="marker ' + colorClassName + '">' + highlightTxt + '</span>'));
   });
