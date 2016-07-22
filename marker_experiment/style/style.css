@@ -1,14 +1,35 @@
 @charset "UTF-8";
 
+b {
+    font-weight: 800;
+}
+
 div#wrapper{
 /*background-color:#F5EFE9;*/
 background-color:#fff;
 height:800px;
 margin:0 auto;
-width:800px;
+width:90%;
 }
 
-.menu-area-top,
+div.left, div.right {
+    width: 50%;
+    float: left
+}
+
+.clear {
+    clear:both;
+}
+
+.menu-area-top {
+  background-color: #F5F5F5;
+  border: #e4e1e1 solid 1px;
+  min-height: 100px;
+  max-height: 1000px;
+  text-align: center;
+  width : 100%;
+}
+
 .menu-area-bottom {
   background-color: #F5F5F5;
   border: #e4e1e1 solid 1px;
