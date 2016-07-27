@@ -16,7 +16,7 @@
         $('body').mouseup(function(e) {
             // ハイライトするテキストをセット
             activeHighlightTxt = getSelectedTextAndToggleColorPicker(e);
-
+            console.log(activeHighlightTxt);
         });
 
         //////////////////////////
@@ -24,13 +24,16 @@
         // 1) 色変更時
         // 2) 削除時
         //////////////////////////
-        $(document).on('mouseenter', '.marker', function(e) {
+        $(document)
+        .on('mouseenter', '.marker', function(e) {
             toggleColorPicker(e);
             $('#pick-del').show();
 
             activeHighlightTxt = $(this).prop('outerHTML');
+        })
+        .on('mouseleave', '.marker', function(e) {
+            toggleColorPicker(e);
         });
-
         //////////////////////////
         // COLORPICKERクリック時のアクション
         //　1) 新規登録時
@@ -113,7 +116,7 @@
             // 色を変更する場合
             ////////////////////////////
             if (idAndPureContents.length > 2) {
-                alert('色変更');
+                //alert('色変更');
 
                 activeHighLightId = idAndPureContents[1];
                 textToInsert = idAndPureContents[2];
@@ -122,14 +125,14 @@
             ////////////////////////////
             // ページロード時
             ///////////////////////////
-                alert('ページロード');
+                //alert('ページロード');
                 activeHighLightId = activeHighLightId;
                 textToInsert = activeHighlightTxt;
             } else {
             ////////////////////////////
             // 新規にハイライトを施す場合
             ////////////////////////////
-                alert('新規');
+                //alert('新規');
                 activeHighLightId = ID_PFIX + getRandomString();
                 textToInsert = activeHighlightTxt;
             }
@@ -197,50 +200,56 @@
     */
     function toggleColorPicker(e) {
         if (!$('.color-picker-wrp').is(':visible')) {
-            $('.color-picker-wrp').show().css('top', e.clientY).css('left', e.clientX);
+            $('.color-picker-wrp').delay(450).fadeIn(100).css('top', e.clientY).css('left', e.clientX);
         } else {
-            $('.color-picker-wrp').hide();
+            $('.color-picker-wrp').delay(2000).hide(1);
+            $('#pick-del').delay(2000).hide(1);
         }
     }
 
 
-// ID作成用のランダム文字列を生成する
-function getRandomString() {
-    // 生成する文字列の長さ
-    var l = 15;
+    // ID作成用のランダム文字列を生成する
+    function getRandomString() {
+        // 生成する文字列の長さ
+        var l = 15;
 
-    // 生成する文字列に含める文字セット
-    var c = "abcdefghijklmnopqrstuvwxyz0123456789";
+        // 生成する文字列に含める文字セット
+        var c = "abcdefghijklmnopqrstuvwxyz0123456789";
 
-    var cl = c.length;
-    var r = "";
-    for(var i=0; i<l; i++){
-      r += c[Math.floor(Math.random()*cl)];
+        var cl = c.length;
+        var r = "";
+        for(var i=0; i<l; i++){
+          r += c[Math.floor(Math.random()*cl)];
+        }
+
+        return r;
     }
 
-    return r;
-}
 
-
-// localstorageを全て削除(デバッグ用)
-function highlightClear() {
-    if (localStorage) {
-        var storage = localStorage;
-        storage.clear();
+    // localstorageを全て削除(デバッグ用)
+    function highlightClear() {
+        if (localStorage) {
+            var storage = localStorage;
+            storage.clear();
+        }
     }
-}
 
-/**
-* ある文字列がspanで囲まれている場合持っているハイライトIDとタグ内の文字列を返す。
-*/
-function fetchIdAndPureContents(txt) {
-    var regexp = new RegExp('^<span.+?(' + ID_PFIX + '[^\\s]+?)\\s.+?>([\\s\\S]+)<\/span>$'); //[\s\S] = 改行を含む任意の一文字
-    var result = txt.match(regexp)
-    if (result) {
-        return result;
+    /**
+    * ある文字列がspanで囲まれている場合持っているハイライトIDとタグ内の文字列を返す。
+    */
+    function fetchIdAndPureContents(txt) {
+
+        // 引数が適切でない場合は空文字を返す
+        if (txt == null || txt.length == 0) {
+            return '';
+        }
+        var regexp = new RegExp('^<span.+?(' + ID_PFIX + '[^\\s]+?)\\s.+?>([\\s\\S]+)<\/span>$'); //[\s\S] = 改行を含む任意の一文字
+        var result = txt.match(regexp);
+        if (result) {
+            return result;
+        }
+        return '';
     }
-    return '';
-}
 
 })();
 
@@ -260,7 +269,6 @@ function store(key, targetTxt, color) {
       storage.setItem(key, JSON.stringify(datalist));
     }
 }
-
 
 // ローカルストレージからキーに対する値を取得する
 function getItem(key) {
