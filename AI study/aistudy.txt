@@ -1,0 +1,14 @@
+AI study
+
+nural network
+the concept of 'weight'
+semantic search
+theano vs tensor flow
+middle layer, hidden layer, chukansou
+what it means by "cost"
+GPU CPU
+diff. bet. keras and theano
+activation function
+softmax is to output probability
+what it means by "graph"
+relu
