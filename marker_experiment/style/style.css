@@ -1,20 +1,30 @@
 @charset "UTF-8";
 
+body {
+    background-color: #e8e8e8;
+    color: #7b3030;
+}
+
 b {
     font-weight: 800;
 }
 
 div#wrapper{
 /*background-color:#F5EFE9;*/
-background-color:#fff;
 height:800px;
 margin:0 auto;
 width:90%;
 }
 
-div.left, div.right {
-    /*width: 50%;
-    float: left*/
+.Info {
+    width: 300px;
+    height: auto;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    background-color: #3a6560;
+    text-align: center;
+    color: #fff;
 }
 
 .clear {
@@ -101,4 +111,8 @@ div.left, div.right {
 
 #pick-del {
   display: none;
+}
+
+#pick-del {
+    background-color: #000;
 }

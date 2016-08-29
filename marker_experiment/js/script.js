@@ -1,11 +1,26 @@
 (function() {
+    // ハイライト対象の文字列
     var activeHighlightTxt = '';
+    // 対象のハイライトのカラー
     var activeColor = '';
+    //　対象のハイライトのID
     var activeHighLightId = '';
 
+    // ハイライトIDのprefix
     var ID_PFIX = 'highLight_id_';
 
     $(document).ready(function() {
+
+        // ハイライトに関する情報を表示しておく(デバッグ用)
+        $(document).mousemove(function (e) {
+            $('.Info').html(
+                '<p>clientX: ' + e.clientX + '</p>'
+                + '<p>clientY: ' + e.clientY + '</p>'
+                + '<p>activeHighLightTxt: ' + activeHighlightTxt + '</p>'
+                + '<p>activeColor: ' + activeColor + '</p>'
+                + '<p>activeHightLightId: ' + activeHighLightId + '</p>'
+            );
+        })
 
         // 保存しているハイライトを出現させる
         highlightOnPageLoad();
@@ -14,41 +29,63 @@
         // MOUSEUP 時のアクション
         //////////////////////////
         $('body').mouseup(function(e) {
-            // ハイライトするテキストをセット
-            activeHighlightTxt = getSelectedTextAndToggleColorPicker(e);
-            console.log(activeHighlightTxt);
+
+            // ハイライトするテキストを取得
+            var selectedText = getSelectedHtml();
+            if (selectedText.length > 0) {
+                // 取得できた場合はセットする
+                setActiveHighlightTxt(selectedText);
+                // ハイライトメニューを表示
+                showHighLightMenu(e);
+            } else {
+                // ハイライトメニューを非表示
+                hideHighLightMenu();
+            }
+        });
+
+        //////////////////////////
+        // ハイライトメニューのカラーをクリック時のアクション
+        // - 新規登録時
+        // - 色変更時
+        //////////////////////////
+        $(document).on('click', '.pkiepick', function() {
+            // 付与するクラス名を取得し、セットする(red, green, yellow, blue)
+            setActiveColor(geColorClassName(this));
+
+            if (activeColor.length > 0 && activeHighlightTxt.length > 0) {
+                // ターゲット文字列を指定した色でハイライトする
+                highLight(false);
+            } else {
+                alert('何らかの理由によりハイライトできませんでした。')
+            }
         });
 
         //////////////////////////
         // ハイライトに MOUSEOVER た場合のアクション
-        // 1) 色変更時
-        // 2) 削除時
+        // - 色変更時
+        // - 削除時
         //////////////////////////
         $(document)
         .on('mouseenter', '.marker', function(e) {
-            toggleColorPicker(e);
-            $('#pick-del').show();
 
-            activeHighlightTxt = $(this).prop('outerHTML');
+            var html = $(this).prop('outerHTML');
+            var highlightId = getHighLightId(html);
+
+            if (highlightId.length > 0) {
+                var pureHtml = store.get(highlightId).targetTxt;
+
+                // ハイライト文字列をセットする
+                setActiveHighlightTxt(pureHtml);
+
+                showHighLightMenu(e);
+                $('#pick-del').show();
+
+            }
         })
         .on('mouseleave', '.marker', function(e) {
-            toggleColorPicker(e);
-        });
-        //////////////////////////
-        // COLORPICKERクリック時のアクション
-        //　1) 新規登録時
-        // 2) 色変更時
-        //////////////////////////
-        $(document).on('click', '.pkiepick', function() {
 
-            // 付与するクラス名を取得する (red, green, yellow, blue)
-            activeColor = geColorClassName(this);
-
-            if (activeColor.length > 0 && activeHighlightTxt.length > 0) {
-                // ターゲット文字列を指定した色でハイライトする
-                highlightTargetedText(false);
-            }
         });
+
 
         //////////////////////////
         // DELETEボタンをクリックした場合のアクション
@@ -58,97 +95,125 @@
 
                 var scope = $(this).html();
 
-                var idAndPureContents = fetchIdAndPureContents(activeHighlightTxt);
+                var idAndPureHtml = getHighLightIdAndPureHTML(activeHighlightTxt);
 
-                if (idAndPureContents.length > 2) {
-                    activeHighLightId = idAndPureContents[1];
-                    var pureContent = idAndPureContents[2];
+                if (idAndPureHtml.length > 2) {
+                    setActiveHighLightId(idAndPureHtml[1]);
+                    var pureHtml = idAndPureHtml[2];
                     // 対象のハイライトを削除する
-                    $(this).html(scope.replace(activeHighlightTxt, pureContent));
+                    $(this).html(scope.replace(activeHighlightTxt, pureHtml));
 
-                    removeItem(activeHighLightId);
+                    // local storageから削除する
+                    store.remove(activeHighLightId);
                 }
             });
         });
     });
 
-    // ページロード時に保存されているハイライトを出現させる
+    /**
+     * ページロード時に保存されているハイライトを出現させる
+     * @returns
+     */
     function highlightOnPageLoad() {
-        if (localStorage) {
-            var storage = localStorage;
-            // ストレージの内容を順番に取り出し、リストに整形（1）
-            for (var i = 0; i < storage.length; ++i) {
-                // i番目のキーを取得（2）
-                var k = storage.key(i);
-                // 指定されたキーの値を取得（3）
 
-                var data = JSON.parse(storage.getItem(k));
-                activeHighlightTxt = data['targetTxt'];
-                activeColor = data['color'];
-                activeHighLightId = k;
+      store.forEach(function(key, data) {
 
-                highlightTargetedText(true);
-            }
-        }
+          // keyがハイライトIDの場合のみ処理する
+          if (key.indexOf(ID_PFIX) === 0) {
+            setActiveHighLightId(key);
+            setActiveHighlightTxt(data.targetTxt);
+            setActiveColor(data.color);
+
+            highLight(true);
+          }
+      });
     }
 
     /**
-    * ハイライトする
-    *
-    * 1) 新規でハイライトする場合
-    * 2) ページロード時
-    * 3) 色を変更する場合
-    */
-    function highlightTargetedText(onPageLoad) {
+     * ハイライトする + local storageに登録する
+     *
+     * 1) 色を変更する場合
+     * 2) ページロード時
+     * 3) 新規でハイライトする場合
+     *
+     * @param onPageLoad
+     * @returns
+     */
+    function highLight(onPageLoad) {
 
         $('body').each(function() {
-
             var scope = $(this).html();
 
-            // 色変更時のみ取得可能
-            var idAndPureContents = fetchIdAndPureContents(activeHighlightTxt);
+            // activeHighLightTxtのIDとピュアテキストを取得する
+            var idAndPureHtml = getHighLightIdAndPureHTML(activeHighlightTxt);
 
             // 挿入するテキスト
-            var textToInsert = '';
+            var pureHtml = '';
 
+            if (idAndPureHtml.length > 2) {
+                ////////////////////////////
+                // 色を変更する場合
+                ////////////////////////////
 
-            ////////////////////////////
-            // 色を変更する場合
-            ////////////////////////////
-            if (idAndPureContents.length > 2) {
-                //alert('色変更');
-
-                activeHighLightId = idAndPureContents[1];
-                textToInsert = idAndPureContents[2];
+                setActiveHighLightId(idAndPureHtml[1]);
+                pureHtml = idAndPureHtml[2];
 
             } else if (onPageLoad) {
-            ////////////////////////////
-            // ページロード時
-            ///////////////////////////
-                //alert('ページロード');
-                activeHighLightId = activeHighLightId;
-                textToInsert = activeHighlightTxt;
+
+                ////////////////////////////
+                // ページロード時
+                ///////////////////////////
+
+                // activeHighLightIdはすでにセットされている。
+
+                pureHtml = activeHighlightTxt;
+
             } else {
-            ////////////////////////////
-            // 新規にハイライトを施す場合
-            ////////////////////////////
-                //alert('新規');
-                activeHighLightId = ID_PFIX + getRandomString();
-                textToInsert = activeHighlightTxt;
+
+                ////////////////////////////
+                // 新規にハイライトを施す場合
+                ////////////////////////////
+
+                setActiveHighLightId(ID_PFIX + getRandomString());
+                pureHtml = activeHighlightTxt;
+
             }
 
+            ////////////////////////////
+            // テキストの加工処理を行う
+            ////////////////////////////
 
-            // 置換処理をおこなう( = ハイライトする)
-            $(this).html(scope.replace(activeHighlightTxt,'<span class="marker ' + activeHighLightId + ' ' + activeColor + '">' + textToInsert + '</span>'));
+            var modifiedHtml = pureHtml;
 
-            // ストレージに保存
-            if (!onPageLoad) {
-                store(activeHighLightId , textToInsert, activeColor);
+            var regexpHEAD = new RegExp('(</?[^>]+>|^)([^<]+)', 'gim');
+            modifiedHtml = modifiedHtml.replace(regexpHEAD,'$1<span class="marker ' + activeHighLightId + ' ' + activeColor + '">$2');
+
+            var regexpTAIL = new RegExp('([^>]+?)(</?[^>]+>|$)', 'gim');
+            modifiedHtml = modifiedHtml.replace(regexpTAIL, '$1</span>$2');
+
+            ////////////////////////////
+            // ハイライト + ストレージに保存する
+            ////////////////////////////
+
+            // 置換前の文字列がちゃんと存在するか確認する
+            if(scope.search(pureHtml) != -1) {
+
+                // 置換処理をおこなう( = ハイライトする)
+                $(this).html(scope.replace(pureHtml, modifiedHtml));
+
+                // ページロード時以外はストレージに保存
+                if (!onPageLoad) {
+                    store.set(activeHighLightId, { targetTxt: pureHtml, color: activeColor });
+                }
             }
-
         });
     }
 
+    /**
+     * 選択された色の情報を返す
+     * @param obj
+     * @returns
+     */
     function geColorClassName(obj) {
 
         var id = $(obj).prop('id');
@@ -164,9 +229,10 @@
     }
 
     /**
-    * 選択した文字を取得しカラーピッカーを表示させる
-    */
-    function getSelectedTextAndToggleColorPicker(e) {
+     * 反転させた文字列を取得する
+     * @returns
+     */
+    function getSelectedHtml() {
         var html = "";
         if (typeof window.getSelection != "undefined") {
             var sel = window.getSelection();
@@ -176,68 +242,48 @@
                     container.appendChild(sel.getRangeAt(i).cloneContents());
                 }
                 html = container.innerHTML;
-            }
-        } else if (typeof document.selection != "undefined") {
-            if (document.selection.type == "Text") {
-                html = document.selection.createRange().htmlText;
+                var replaced = html.replace(/^<p>([\s\S]+)<\/p>$/, '$1');
             }
         }
 
         // 文字が選択されている場合
-        if (html.length > 0) {
-            $('.color-picker-wrp').show().css('top', e.clientY).css('left', e.clientX);
-            return html;
+        if (replaced.length > 0) {
+            return replaced;
         }
 
         // 文字を取得できな買った場合
-        $('#pick-del').hide();
-        $('.color-picker-wrp').hide();
-        return activeHighlightTxt;
+        return '';
     }
 
     /**
-    * カラーピッカーを表示/非表示させる
-    */
-    function toggleColorPicker(e) {
-        if (!$('.color-picker-wrp').is(':visible')) {
-            $('.color-picker-wrp').delay(450).fadeIn(100).css('top', e.clientY).css('left', e.clientX);
-        } else {
-            $('.color-picker-wrp').delay(2000).hide(1);
-            $('#pick-del').delay(2000).hide(1);
-        }
+     * ハイライトメニューを表示させる
+     * @param e
+     * @returns
+     */
+    function showHighLightMenu(e) {
+        var scrollHeight = $(window).scrollTop();
+        // $('.color-picker-wrp').delay(450).fadeIn(100).css('top', e.clientY).css('left', e.clientX);
+        $('.color-picker-wrp').show().css('left', e.clientX).css('top', e.clientY + scrollHeight);
+        console.log(e.clientX + ':' + e.clientY);
     }
 
-
-    // ID作成用のランダム文字列を生成する
-    function getRandomString() {
-        // 生成する文字列の長さ
-        var l = 15;
-
-        // 生成する文字列に含める文字セット
-        var c = "abcdefghijklmnopqrstuvwxyz0123456789";
-
-        var cl = c.length;
-        var r = "";
-        for(var i=0; i<l; i++){
-          r += c[Math.floor(Math.random()*cl)];
-        }
-
-        return r;
-    }
-
-
-    // localstorageを全て削除(デバッグ用)
-    function highlightClear() {
-        if (localStorage) {
-            var storage = localStorage;
-            storage.clear();
+    /**
+     * ハイライトメニューを非表示にする
+     * @returns
+     */
+    function hideHighLightMenu() {
+        if ($('.color-picker-wrp').is(':visible')) {
+            $('.color-picker-wrp').hide();
+            $('#pick-del').hide();
         }
     }
 
     /**
-    * ある文字列がspanで囲まれている場合持っているハイライトIDとタグ内の文字列を返す。
-    */
-    function fetchIdAndPureContents(txt) {
+     * ある文字列がハイライト用の<span>で囲まれている場合持っているハイライトIDとタグ内の文字列を返す。
+     * @param txt
+     * @returns
+     */
+    function getHighLightIdAndPureHTML(txt) {
 
         // 引数が適切でない場合は空文字を返す
         if (txt == null || txt.length == 0) {
@@ -251,43 +297,70 @@
         return '';
     }
 
+    /**
+     * 指定した文字列の中にハイライトIDが含まれていれば返す
+     * @param txt
+     * @returns ハイライトID, もしくは空文字
+     */
+    function getHighLightId(txt) {
+
+        // 引数が適切でない場合は空文字を返す
+        if (txt == null || txt.length == 0) {
+            return '';
+        }
+        var regexp = new RegExp('^<span.+?(' + ID_PFIX + '[^\\s]+?)\\s.+?>[\\s\\S]+<\/span>$'); //[\s\S] = 改行を含む任意の一文字
+        var result = txt.match(regexp);
+        if (result) {
+            return result[1];
+        }
+        return '';
+    }
+
+    /**
+     * ハイライト対象の文字列をセットする
+     * @param text
+     * @returns
+     */
+    function setActiveHighlightTxt(text) {
+        activeHighlightTxt = text;
+    }
+　　　　
+    /**
+     * ハイライト対象の文字列の色をセットする
+     * @param color
+     * @returns
+     */
+    function setActiveColor(color) {
+        activeColor = color;
+    }
+
+    /**
+     * ハイライト対象の文字列のIDをセットする
+     * @param id
+     * @returns
+     */
+    function setActiveHighLightId(id) {
+        activeHighLightId = id;
+    }
+
 })();
 
-// ローカルストレージに保存する
-function store(key, targetTxt, color) {
-    // ストレージが利用できるかをチェック
-    if (localStorage) {
-      // ローカルストレージを呼び出し
-        var storage = localStorage;
+/**
+ * ID作成用のランダム文字列を生成する
+ * @returns
+ */
+function getRandomString() {
+    // 生成する文字列の長さ
+    var l = 15;
 
-        var datalist = {
-            targetTxt: targetTxt,
-            color: color
-        }
+    // 生成する文字列に含める文字セット
+    var c = "abcdefghijklmnopqrstuvwxyz0123456789";
 
-      // ストレージにキーと値をセット
-      storage.setItem(key, JSON.stringify(datalist));
+    var cl = c.length;
+    var r = "";
+    for(var i=0; i<l; i++){
+      r += c[Math.floor(Math.random() * cl)];
     }
-}
 
-// ローカルストレージからキーに対する値を取得する
-function getItem(key) {
-    // ストレージが利用できるかをチェック
-    if (localStorage) {
-      // ローカルストレージをセット
-      var storage = localStorage;
-      // ストレージからキーlastAccessedを取得
-      return storage.getItem(key);
-    }
-}
-
-// ローカルストレージから指定してデータを削除する
-function removeItem(key) {
-    // ストレージが利用できるかをチェック
-    if (localStorage) {
-      // ローカルストレージをセット
-      var storage = localStorage;
-      // ストレージからキーlastAccessedを取得
-      storage.removeItem(key);
-    }
+    return r;
 }

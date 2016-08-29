@@ -3,8 +3,9 @@
   <head>
     <meta charset="utf-8">
     <link rel="stylesheet" href="./style/style.css" charset="utf-8">
-    <title></title>
+    <title>highlighter</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script type="text/javascript" language="javascript" src="./js/store.min.js"></script>
     <script type="text/javascript" language="javascript" src="./js/script.js"></script>
   </head>
   <body>
@@ -53,38 +54,24 @@
             what what what what what what what what what what what what what what what
         </p>
         </div>
-        <div style="display:none;" class="right">
-            <p style="text-align:center;">
-                highlightTxt  :
-            </p>
-            <div class="menu-area-top">
-
-              <p><span id=constantTargetText></span></p>
-            </div>
-            <p style="text-align:center;">
-                pureContent  :
-            </p>
-            <div class="menu-area-top">
-
-              <p><span id=constantPureContent></span></p>
-            </div>
-        </div>
         <br class=clear>
     </div>
 
     <div class="color-picker-wrp">
-      <table>
-        <tbody>
-          <tr>
-            <td id="pick-red" class="pkiepick"></td>
-            <td id="pick-blue" class="pkiepick"></td>
-            <td id="pick-yellow" class="pkiepick"></td>
-            <td id="pick-green" class="pkiepick"></td>
-            <td id="pick-del">D</td>
-          </tr>
-          </tbody>
+        <table>
+            <tbody>
+                <tr>
+                    <td id="pick-red" class="pkiepick"></td>
+                    <td id="pick-blue" class="pkiepick"></td>
+                    <td id="pick-yellow" class="pkiepick"></td>
+                    <td id="pick-green" class="pkiepick"></td>
+                    <td id="pick-del"></td>
+                </tr>
+            </tbody>
         </table>
-      </div>
-
+    </div>
+    <div class="Info">
+    <!-- jQueryで動的コンテンツ生成 -->
+    </div>
 </body>
 </html>
