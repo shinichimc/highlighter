@@ -5,6 +5,8 @@
     var activeColor = '';
     //　対象のハイライトのID
     var activeHighLightId = '';
+    // ハイライト変更色モードか
+    var colorChangeMode = false;
 
     // ハイライトIDのprefix
     var ID_PFIX = 'highLight_id_';
@@ -19,6 +21,7 @@
                 + '<p>activeHighLightTxt: ' + activeHighlightTxt + '</p>'
                 + '<p>activeColor: ' + activeColor + '</p>'
                 + '<p>activeHightLightId: ' + activeHighLightId + '</p>'
+                + '<p>colorChangeMode: ' + colorChangeMode + '</p>'
             );
         })
 
@@ -28,7 +31,7 @@
         //////////////////////////
         // MOUSEUP 時のアクション
         //////////////////////////
-        $('body').mouseup(function(e) {
+        $(window).mouseup(function(e) {
 
             // ハイライトするテキストを取得
             var selectedText = getSelectedHtml();
@@ -39,6 +42,8 @@
                 showHighLightMenu(e);
 
                 setActiveHighLightId('');
+
+                colorChangeMode = false;
             } else {
                 // ハイライトメニューを非表示
                 hideHighLightMenu();
@@ -82,6 +87,8 @@
                 // ハイライト文字列をセットする
                 setActiveHighlightTxt(pureHtml);
 
+                colorChangeMode = true;
+
                 showHighLightMenu(e);
                 $('#pick-del').show();
             }
@@ -108,10 +115,84 @@
     });
 
     /**
+     * ハイライトする
+     *
+     * 1) 色を変更する場合
+     * 2) ページロード時
+     * 3) 新規でハイライトする場合
+     *
+     * @param onPageLoad
+     * @returns
+     */
+    function highLight(onPageLoad) {
+
+        if (colorChangeMode) {
+          /////////////////////////
+          // 色を変更する場合
+          /////////////////////////
+
+          // 想定するハイライトIDを持った要素が存在しなければ処理を終了する
+          if (activeHighLightId.length == 0 || !$('.' + activeHighLightId)[0] ) return;
+          var $highlightElem = $('.' + activeHighLightId);
+          var currentColor = store.get(activeHighLightId).color;
+
+          $highlightElem.removeClass(currentColor).addClass(activeColor);
+          store.set(activeHighLightId, { targetTxt: activeHighlightTxt, color: activeColor });
+
+        } else {
+          /////////////////////////
+          // 新規にハイライト OR ページロード時
+          /////////////////////////
+          $('.left').each(function() {
+
+              var pureHtml = activeHighlightTxt;
+
+              // ハイライトIDがセットされていない場合(= 新規でハイライトする場合)新しいIDをセットする
+              if (activeHighLightId.length == 0) {
+                  setActiveHighLightId(ID_PFIX + getRandomString());
+              }
+
+              ////////////////////////////
+              // テキストの加工処理を行う
+              ////////////////////////////
+
+              var modifiedHtml = pureHtml;
+
+              var regexpHEAD = new RegExp('(</?[^>]+>|^)([^<]+)', 'gim');
+              modifiedHtml = modifiedHtml.replace(regexpHEAD,'$1<span class="marker ' + activeHighLightId + ' ' + activeColor + '">$2');
+
+              var regexpTAIL = new RegExp('([^>]+?)(</?[^>]+>|$)', 'gim');
+              modifiedHtml = modifiedHtml.replace(regexpTAIL, '$1</span>$2');
+
+              ////////////////////////////
+              // ハイライト + ストレージに保存する
+              ////////////////////////////
+
+              // 置換前の文字列がちゃんと存在するか確認する
+              var scope = $(this).html();
+              if (!onPageLoad) {console.log(scope.indexOf(pureHtml)); console.log(pureHtml); console.log(modifiedHtml); console.log($('body').html());}
+              if(scope.search(pureHtml) != -1) {
+                  // 置換処理をおこなう( = ハイライトする)
+                  $(this).html(scope.replace(pureHtml, modifiedHtml));
+
+                  // ページロード時以外はストレージに保存
+                  if (!onPageLoad) {
+                      store.set(activeHighLightId, { targetTxt: pureHtml, color: activeColor });
+                  }
+              } else {
+                alert('失敗しました');
+              }
+          });
+        }
+    }
+
+    /**
      * ページロード時に保存されているハイライトを出現させる
      * @returns
      */
     function highlightOnPageLoad() {
+
+      colorChangeMode = false;
 
       store.forEach(function(key, data) {
 
@@ -124,58 +205,6 @@
             highLight(true);
           }
       });
-    }
-
-    /**
-     * ハイライトする
-     *
-     * 1) 色を変更する場合
-     * 2) ページロード時
-     * 3) 新規でハイライトする場合
-     *
-     * @param onPageLoad
-     * @returns
-     */
-    function highLight(onPageLoad) {
-
-        $('body').each(function() {
-
-            var pureHtml = activeHighlightTxt;
-
-            // ハイライトIDがセットされていない場合(= 新規でハイライトする場合)新しいIDをセットする
-            if (activeHighLightId.length == 0) {
-                setActiveHighLightId(ID_PFIX + getRandomString());
-            }
-
-            ////////////////////////////
-            // テキストの加工処理を行う
-            ////////////////////////////
-
-            var modifiedHtml = pureHtml;
-
-            var regexpHEAD = new RegExp('(</?[^>]+>|^)([^<]+)', 'gim');
-            modifiedHtml = modifiedHtml.replace(regexpHEAD,'$1<span class="marker ' + activeHighLightId + ' ' + activeColor + '">$2');
-
-            var regexpTAIL = new RegExp('([^>]+?)(</?[^>]+>|$)', 'gim');
-            modifiedHtml = modifiedHtml.replace(regexpTAIL, '$1</span>$2');
-
-            ////////////////////////////
-            // ハイライト + ストレージに保存する
-            ////////////////////////////
-
-            // 置換前の文字列がちゃんと存在するか確認する
-            var scope = $(this).html();
-            if (!onPageLoad) {console.log(scope.indexOf(pureHtml)); console.log(pureHtml); console.log(modifiedHtml); console.log($('body').html());}
-            if(scope.search(pureHtml) != -1) {
-                // 置換処理をおこなう( = ハイライトする)
-                $(this).html(scope.replace(pureHtml, modifiedHtml));
-
-                // ページロード時以外はストレージに保存
-                if (!onPageLoad) {
-                    store.set(activeHighLightId, { targetTxt: pureHtml, color: activeColor });
-                }
-            }
-        });
     }
 
     /**
