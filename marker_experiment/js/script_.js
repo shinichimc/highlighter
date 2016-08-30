@@ -37,8 +37,6 @@
                 setActiveHighlightTxt(selectedText);
                 // ハイライトメニューを表示
                 showHighLightMenu(e);
-
-                setActiveHighLightId('');
             } else {
                 // ハイライトメニューを非表示
                 hideHighLightMenu();
@@ -70,40 +68,45 @@
         $(document)
         .on('mouseenter', '.marker', function(e) {
 
-            var text = $(this).prop('outerHTML');
+            var html = $(this).prop('outerHTML');
+            var highlightId = getHighLightId(html);
 
-            var highlightId = getHighLightId(text);
             if (highlightId.length > 0) {
                 var pureHtml = store.get(highlightId).targetTxt;
-
-                // ハイライトidをセットする
-                setActiveHighLightId(highlightId);
 
                 // ハイライト文字列をセットする
                 setActiveHighlightTxt(pureHtml);
 
                 showHighLightMenu(e);
                 $('#pick-del').show();
+
             }
         })
         .on('mouseleave', '.marker', function(e) {
 
         });
 
+
         //////////////////////////
         // DELETEボタンをクリックした場合のアクション
         //////////////////////////
         $(document).on('click', '#pick-del', function() {
+            $('body').each(function()　{
 
-            // 想定するハイライトIDを持った要素が存在しなければ処理を終了する
-            if (activeHighLightId.length == 0 || !$('.' + activeHighLightId)[0] ) return;
+                var scope = $(this).html();
 
-            var $highlightElem = $('.' + activeHighLightId);
-            $highlightElem.contents().unwrap();
+                var idAndPureHtml = getHighLightIdAndPureHTML(activeHighlightTxt);
 
-            // local storageから削除する
-            store.remove(activeHighLightId);
+                if (idAndPureHtml.length > 2) {
+                    setActiveHighLightId(idAndPureHtml[1]);
+                    var pureHtml = idAndPureHtml[2];
+                    // 対象のハイライトを削除する
+                    $(this).html(scope.replace(activeHighlightTxt, pureHtml));
 
+                    // local storageから削除する
+                    store.remove(activeHighLightId);
+                }
+            });
         });
     });
 
@@ -127,7 +130,7 @@
     }
 
     /**
-     * ハイライトする
+     * ハイライトする + local storageに登録する
      *
      * 1) 色を変更する場合
      * 2) ページロード時
@@ -139,12 +142,41 @@
     function highLight(onPageLoad) {
 
         $('body').each(function() {
+            var scope = $(this).html();
 
-            var pureHtml = activeHighlightTxt;
+            // activeHighLightTxtのIDとピュアテキストを取得する
+            var idAndPureHtml = getHighLightIdAndPureHTML(activeHighlightTxt);
 
-            // ハイライトIDがセットされていない場合(= 新規でハイライトする場合)新しいIDをセットする
-            if (activeHighLightId.length == 0) {
+            // 挿入するテキスト
+            var pureHtml = '';
+
+            if (idAndPureHtml.length > 2) {
+                ////////////////////////////
+                // 色を変更する場合
+                ////////////////////////////
+
+                setActiveHighLightId(idAndPureHtml[1]);
+                pureHtml = idAndPureHtml[2];
+
+            } else if (onPageLoad) {
+
+                ////////////////////////////
+                // ページロード時
+                ///////////////////////////
+
+                // activeHighLightIdはすでにセットされている。
+
+                pureHtml = activeHighlightTxt;
+
+            } else {
+
+                ////////////////////////////
+                // 新規にハイライトを施す場合
+                ////////////////////////////
+
                 setActiveHighLightId(ID_PFIX + getRandomString());
+                pureHtml = activeHighlightTxt;
+
             }
 
             ////////////////////////////
@@ -164,9 +196,8 @@
             ////////////////////////////
 
             // 置換前の文字列がちゃんと存在するか確認する
-            var scope = $(this).html();
-            if (!onPageLoad) {console.log(scope.indexOf(pureHtml)); console.log(pureHtml); console.log(modifiedHtml); console.log($('body').html());}
             if(scope.search(pureHtml) != -1) {
+
                 // 置換処理をおこなう( = ハイライトする)
                 $(this).html(scope.replace(pureHtml, modifiedHtml));
 
@@ -233,6 +264,7 @@
         var scrollHeight = $(window).scrollTop();
         // $('.color-picker-wrp').delay(450).fadeIn(100).css('top', e.clientY).css('left', e.clientX);
         $('.color-picker-wrp').show().css('left', e.clientX).css('top', e.clientY + scrollHeight);
+        console.log(e.clientX + ':' + e.clientY);
     }
 
     /**
