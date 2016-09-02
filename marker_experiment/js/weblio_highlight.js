@@ -1,3 +1,8 @@
+/**
+ * highlighter
+ * jQuery, store.jsが必要
+ * @author sakai
+ */
 (function() {
     // ハイライト対象の文字列
     var activeHighlightTxt = '';
@@ -89,8 +94,7 @@
         // - 色変更時
         // - 削除時
         //////////////////////////
-        $(document)
-        .on('mouseenter', '.marker', function(e) {
+        $(document).on('mouseenter', '.marker', function(e) {
 
             var text = $(this).prop('outerHTML');
 
@@ -109,9 +113,6 @@
                 showHighLightMenu(e);
                 $('#pick-del').show();
             }
-        })
-        .on('mouseleave', '.marker', function(e) {
-
         });
 
         //////////////////////////
@@ -144,62 +145,60 @@
     function highLight(onPageLoad) {
 
         if (colorChangeMode) {
-          /////////////////////////
-          // 色を変更する場合
-          /////////////////////////
+            /////////////////////////
+            // 色を変更する場合
+            /////////////////////////
 
-          // 想定するハイライトIDを持った要素が存在しなければ処理を終了する
-          if (activeHighLightId.length == 0 || !$('.' + activeHighLightId)[0] ) return;
-          var $highlightElem = $('.' + activeHighLightId);
-          var currentColor = store.get(activeHighLightId).color;
+            // 想定するハイライトIDを持った要素が存在しなければ処理を終了する
+            if (activeHighLightId.length == 0 || !$('.' + activeHighLightId)[0] ) return;
+            var $highlightElem = $('.' + activeHighLightId);
+            var currentColor = store.get(activeHighLightId).color;
 
-          $highlightElem.removeClass(currentColor).addClass(activeColor);
-          store.set(activeHighLightId, { targetTxt: activeHighlightTxt, color: activeColor });
+            $highlightElem.removeClass(currentColor).addClass(activeColor);
+            store.set(activeHighLightId, { targetTxt: activeHighlightTxt, color: activeColor });
 
         } else {
-          /////////////////////////
-          // 新規にハイライト OR ページロード時
-          /////////////////////////
-          $('.left').each(function() {
+            /////////////////////////
+            // 新規にハイライト OR ページロード時
+            /////////////////////////
 
-              var pureHtml = activeHighlightTxt;
+            var pureHtml = activeHighlightTxt;
 
-              // ハイライトIDがセットされていない場合(= 新規でハイライトする場合)新しいIDをセットする
-              if (activeHighLightId.length == 0) {
-                  setActiveHighLightId(ID_PFIX + getRandomString());
-              }
+            // ハイライトIDがセットされていない場合(= 新規でハイライトする場合)新しいIDをセットする
+            if (activeHighLightId.length == 0) {
+                setActiveHighLightId(ID_PFIX + getRandomString());
+            }
 
-              ////////////////////////////
-              // テキストの加工処理を行う
-              ////////////////////////////
+            ////////////////////////////
+            // テキストの加工処理を行う
+            ////////////////////////////
 
-              var modifiedHtml = pureHtml;
+            var modifiedHtml = pureHtml;
 
-              var regexpHEAD = new RegExp('(</?[^>]+>|^)([^<]+)', 'gim');
-              modifiedHtml = modifiedHtml.replace(regexpHEAD,'$1<span class="marker ' + activeHighLightId + ' ' + activeColor + '">$2');
+            var regexpHEAD = new RegExp('(</?[^>]+>|^)([^<]+)', 'gim');
+            modifiedHtml = modifiedHtml.replace(regexpHEAD,'$1<em class="marker ' + activeHighLightId + ' ' + activeColor + '">$2');
 
-              var regexpTAIL = new RegExp('([^>]+?)(</?[^>]+>|$)', 'gim');
-              modifiedHtml = modifiedHtml.replace(regexpTAIL, '$1</span>$2');
+            var regexpTAIL = new RegExp('([^>]+?)(</?[^>]+>|$)', 'gim');
+            modifiedHtml = modifiedHtml.replace(regexpTAIL, '$1</em>$2');
 
-              ////////////////////////////
-              // ハイライト + ストレージに保存する
-              ////////////////////////////
+            ////////////////////////////
+            // ハイライト + ストレージに保存する
+            ////////////////////////////
 
-              // 置換前の文字列がちゃんと存在するか確認する
-              var scope = $(this).html();
-              if (!onPageLoad) {console.log(scope.indexOf(pureHtml)); console.log(pureHtml); console.log(modifiedHtml); console.log($('body').html());}
-              if(scope.search(pureHtml) != -1) {
-                  // 置換処理をおこなう( = ハイライトする)
-                  $(this).html(scope.replace(pureHtml, modifiedHtml));
+            // 置換前の文字列がちゃんと存在するか確認する
+            var scope = $('body').html();
+            if (!onPageLoad) {console.log('【indexOf】' + scopeHtml.indexOf(pureHtml)); console.log('【pureHtml】' + pureHtml); console.log('【modifiedHtml】' + modifiedHtml); console.log('【scopeHtml】' + scopeHtml);}
+            if(scope.search(pureHtml) != -1) {
+                // 置換処理をおこなう( = ハイライトする)
+                $('body').html(scope.replace(pureHtml, modifiedHtml));
 
-                  // ページロード時以外はストレージに保存
-                  if (!onPageLoad) {
-                      store.set(activeHighLightId, { targetTxt: pureHtml, color: activeColor });
-                  }
-              } else {
+                // ページロード時以外はストレージに保存
+                if (!onPageLoad) {
+                    store.set(activeHighLightId, { targetTxt: pureHtml, color: activeColor });
+                }
+            } else {
                 alert('失敗しました');
-              }
-          });
+            }
         }
     }
 
@@ -209,19 +208,18 @@
      */
     function highlightOnPageLoad() {
 
-      colorChangeMode = false;
+        colorChangeMode = false;
 
-      store.forEach(function(key, data) {
+        store.forEach(function(key, data) {
+            // keyがハイライトIDの場合のみ処理する
+            if (key.indexOf(ID_PFIX) === 0) {
+                setActiveHighLightId(key);
+                setActiveHighlightTxt(data.targetTxt);
+                setActiveColor(data.color);
 
-          // keyがハイライトIDの場合のみ処理する
-          if (key.indexOf(ID_PFIX) === 0) {
-            setActiveHighLightId(key);
-            setActiveHighlightTxt(data.targetTxt);
-            setActiveColor(data.color);
-
-            highLight(true);
-          }
-      });
+                highLight(true);
+            }
+        });
     }
 
     /**
@@ -231,16 +229,17 @@
      */
     function geColorClassName(obj) {
 
-        var id = $(obj).prop('id');
-        if (!id) {
-            return '';
-        }
+        // 渡されたエレメントが存在しない場合はデフォルト色'yellow'を返す
+        if (!$(obj)[0]) return 'yellow';
 
-        if (id == 'pick-red') return 'red';
-        else if (id == 'pick-blue') return 'blue';
-        else if (id == 'pick-yellow') return 'yellow';
-        else if (id == 'pick-green') return 'green';
-        else return 'yellow';
+        var id = $(obj).attr('id');
+        if (typeof id !== typeof undefined && id !== false) {
+            if (id == 'pick-red') return 'red';
+            else if (id == 'pick-blue') return 'blue';
+            else if (id == 'pick-yellow') return 'yellow';
+            else if (id == 'pick-green') return 'green';
+            else return 'yellow';
+        }
     }
 
     /**
@@ -248,16 +247,18 @@
      * @returns
      */
     function getSelectedHtml() {
-        var html = "";
-        if (typeof window.getSelection != "undefined") {
+
+        var html = '';
+        var replaced = '';
+        if (typeof window.getSelection != 'undefined') {
             var sel = window.getSelection();
             if (sel.rangeCount) {
-                var container = document.createElement("div");
+                var container = document.createElement('div');
                 for (var i = 0, len = sel.rangeCount; i < len; ++i) {
                     container.appendChild(sel.getRangeAt(i).cloneContents());
                 }
                 html = container.innerHTML;
-                var replaced = html.replace(/^<p>([\s\S]+)<\/p>$/, '$1');
+                replaced = html.replace(/^<p>([\s\S]+)<\/p>$/, '$1');
             }
         }
 
@@ -293,7 +294,7 @@
     }
 
     /**
-     * ある文字列がハイライト用の<span>で囲まれている場合持っているハイライトIDとタグ内の文字列を返す。
+     * 渡された文字列がハイライト用の<em>で囲まれている場合持っているハイライトIDとタグ内の文字列を返す。
      * @param txt
      * @returns
      */
@@ -303,7 +304,7 @@
         if (txt == null || txt.length == 0) {
             return '';
         }
-        var regexp = new RegExp('^<span.+?(' + ID_PFIX + '[^\\s]+?)\\s.+?>([\\s\\S]+)<\/span>$'); //[\s\S] = 改行を含む任意の一文字
+        var regexp = new RegExp('^<em.+?(' + ID_PFIX + '[^\\s]+?)\\s.+?>([\\s\\S]+)<\/em>$'); //[\s\S] = 改行を含む任意の一文字
         var result = txt.match(regexp);
         if (result) {
             return result;
@@ -312,7 +313,7 @@
     }
 
     /**
-     * 指定した文字列の中にハイライトIDが含まれていれば返す
+     * 渡された文字列の中にハイライトIDが含まれていれば返す
      * @param txt
      * @returns ハイライトID, もしくは空文字
      */
@@ -322,7 +323,7 @@
         if (txt == null || txt.length == 0) {
             return '';
         }
-        var regexp = new RegExp('^<span.+?(' + ID_PFIX + '[^\\s]+?)\\s.+?>[\\s\\S]+<\/span>$'); //[\s\S] = 改行を含む任意の一文字
+        var regexp = new RegExp('^<em.+?(' + ID_PFIX + '[^\\s]+?)\\s.+?>[\\s\\S]+<\/em>$'); //[\s\S] = 改行を含む任意の一文字
         var result = txt.match(regexp);
         if (result) {
             return result[1];
@@ -338,7 +339,7 @@
     function setActiveHighlightTxt(text) {
         activeHighlightTxt = text;
     }
-　　　　
+
     /**
      * ハイライト対象の文字列の色をセットする
      * @param color

@@ -50,27 +50,27 @@ width:90%;
 }
 
 .marker {
-
+  font-style: inherit;
 }
 
 .red {
-  background-color: #ec96cb;
-  background: linear-gradient(transparent 0%, #ec96cb 60%);
+  background-color: #ffcccc;
+  background: linear-gradient(transparent 0%, #ffcccc 60%);
 }
 
 .blue {
-  background-color: #579ff5;
-  background: linear-gradient(transparent 0%, #579ff5 60%);
+  background-color: #abd5ff;
+  background: linear-gradient(transparent 0%, #abd5ff 60%);
 }
 
 .yellow {
-  background-color: #f1ca46;
-  background: linear-gradient(transparent 0%, #f1ca46 60%);
+  background-color: #ffff99;
+  background: linear-gradient(transparent 0%, #ffff99 60%);
 }
 
 .green {
-  background-color: #2cd29a;
-  background: linear-gradient(transparent 0%, #2cd29a 60%);
+  background-color: #b2e57e;
+  background: linear-gradient(transparent 0%, #b2e57e 60%);
 }
 
 .color-picker-wrp {
@@ -80,6 +80,7 @@ width:90%;
   height: 24px;
   position: absolute;
   left: 0;
+  z-index: 20;
 }
 
 .color-picker-wrp table {
@@ -94,19 +95,19 @@ width:90%;
 }
 
 #pick-red, .red {
-  background-color: #ec96cb;
+  background-color: #ffcccc;
 }
 
 #pick-blue, .blue {
-  background-color: #579ff5;
+  background-color: #abd5ff;
 }
 
 #pick-yellow, .yellow {
-  background-color: #f1ca46;
+  background-color: #ffff99;
 }
 
 #pick-green, .green {
-  background-color: #2cd29a;
+  background-color: #b2e57e;
 }
 
 #pick-del {
